@@ -64,62 +64,44 @@ function attachAuthListeners() {
 
   if (signupForm) {
     signupForm.addEventListener("submit", function (event) {
-      event.preventDefault();
+  event.preventDefault();
 
-      const first_name = document.getElementById("signup-firstname").value.trim();
-      const last_name  = document.getElementById("signup-lastname").value.trim();
-      const email      = document.getElementById("signup-email").value.trim();
-      const password   = document.getElementById("signup-password").value;
+  const password = document.getElementById("signup-password").value;
 
-      // ── Frontend validation ──────────────────────────────────────────────
+  if (password.length < 8) {
+    alert("Password must be at least 8 characters long.");
+    return;
+  }
+  const specialChar = /[!@#$%]/;
+  if (!specialChar.test(password)) {
+    alert("Password must include at least one special character: ! @ # $ %");
+    return;
+  }
 
-      // Rule 1: password must be at least 8 characters
-      if (password.length < 8) {
-        alert("Password must be at least 8 characters long.");
-        return;
-      }
-
-      // Rule 2: password must contain at least one special character
-      // Must match the backend regex exactly: /[!@#$%]/
-      const specialCharPattern = /[!@#$%]/;
-      if (!specialCharPattern.test(password)) {
-        alert("Password must include at least one special character: ! @ # $ %");
-        return;
-      }
-
-      // ── Send to backend ──────────────────────────────────────────────────
-      // Field names must match what POST /users expects: first_name, last_name
-      const formData = {
-        first_name: first_name,
-        last_name:  last_name,
-        email:      email,
-        password:   password
-      };
-
-      fetch(BACKEND_URL + "/users", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(formData)
-      })
-        .then(function (response) {
-          return response.json();
-        })
-        .then(function (data) {
-          if (data.message) {
-            // Success — user was created
-            alert("Account created successfully! You can now log in.");
-            signupForm.reset();
-          } else {
-            // Backend returned a validation or server error
-            alert("Error: " + data.error);
-          }
-        })
-        .catch(function (error) {
-          // Network error — backend probably not running
-          alert("Could not connect to the server. Make sure node server.js is running.");
-          console.error("Signup error:", error);
-        });
-    });
+  fetch("http://localhost:3000/users", {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      first_name: document.getElementById("signup-firstname").value.trim(),
+      last_name:  document.getElementById("signup-lastname").value.trim(),
+      email:      document.getElementById("signup-email").value.trim(),
+      password:   password
+    })
+  })
+  .then(function (response) { return response.json(); })
+  .then(function (data) {
+    if (data.message) {
+      alert("Account created! You can now log in.");
+      signupForm.reset();
+    } else {
+      alert("Error: " + data.error);
+    }
+  })
+  .catch(function (error) {
+    alert("Could not connect to the server. Make sure node server.js is running.");
+    console.error("Signup error:", error);
+  });
+});
   }
 
   // ── LOGIN FORM ───────────────────────────────────────────────────────────
@@ -127,58 +109,42 @@ function attachAuthListeners() {
 
   if (loginForm) {
     loginForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-
-      const email    = document.getElementById("login-email").value.trim();
-      const password = document.getElementById("login-password").value;
-
-      // ── Frontend validation ──────────────────────────────────────────────
-
-      // Rule 1: password must be at least 8 characters
-      if (password.length < 8) {
-        alert("Password must be at least 8 characters long.");
-        return;
-      }
-
-      // Rule 2: password must contain at least one special character
-      // Must match the backend regex exactly: /[!@#$%]/
-      const specialCharPattern = /[!@#$%]/;
-      if (!specialCharPattern.test(password)) {
-        alert("Password must include at least one special character: ! @ # $ %");
-        return;
-      }
-
-      // ── Send to backend ──────────────────────────────────────────────────
-      const formData = {
-        email:    email,
-        password: password
-      };
-
-      fetch(BACKEND_URL + "/login", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(formData)
-      })
-        .then(function (response) {
-          return response.json();
-        })
-        .then(function (data) {
-          if (data.message) {
-            // Success — credentials matched
-            alert("Login successful! Welcome back.");
-            loginForm.reset();
-          } else {
-            // Backend returned 401 or 400
-            alert("Error: " + data.error);
-          }
-        })
-        .catch(function (error) {
-          // Network error — backend probably not running
-          alert("Could not connect to the server. Make sure node server.js is running.");
-          console.error("Login error:", error);
-        });
-    });
+  event.preventDefault();
+ 
+  const email    = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value;
+ 
+  if (password.length < 8) {
+    alert("Password must be at least 8 characters long.");
+    return;
   }
+  const specialChar = /[!@#$%]/;
+  if (!specialChar.test(password)) {
+    alert("Password must include at least one special character: ! @ # $ %");
+    return;
+  }
+ 
+  fetch("http://localhost:3000/login", {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ email: email, password: password })
+  })
+  .then(function (response) { return response.json(); })
+  .then(function (data) {
+    if (data.message) {
+      alert("Login successful! Welcome back.");
+      loginForm.reset();
+    } else {
+      alert("Error: " + data.error);
+    }
+  })
+  .catch(function (error) {
+    alert("Could not connect to the server. Make sure node server.js is running.");
+    console.error("Login error:", error);
+  });
+});
+  }
+
 }
 
 // ── CONTACT FORM ──────────────────────────────────────────────────────────────
